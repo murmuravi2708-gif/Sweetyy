@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Sweetheart! 🎂</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    overflow-x: hidden;
+  }
+
+  @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)} }
+  @keyframes spin-slow { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
+  @keyframes heart-beat { 0%,100%{transform:scale(1)}50%{transform:scale(1.15)} }
+  @keyframes fade-up { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+  @keyframes confetti-fall { 0%{transform:translateY(-100vh) rotate(0deg)}100%{transform:translateY(100vh) rotate(720deg)} }
+  @keyframes type-cursor { 0%,100%{border-color:transparent}50%{border-color:#1a1a1a} }
+  @keyframes wiggle { 0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)} }
+
+  .sticker { position: absolute; pointer-events: none; z-index: 5; }
+  .sticker-heart { color: #ff6b9d; font-size: 28px; animation: float 3s ease-in-out infinite; }
+  .sticker-star { color: #ffd93d; font-size: 22px; animation: float 2.5s ease-in-out infinite 0.5s; }
+  .sticker-smile { color: #6bcb77; font-size: 26px; animation: wiggle 2s ease-in-out infinite; }
+  .sticker-sparkle { color: #a855f7; font-size: 20px; animation: spin-slow 4s linear infinite; }
+
+  #app { max-width: 480px; margin: 0 auto; padding: 16px; position: relative; overflow: hidden; min-height: 100vh; }
+
+  .page { display: none; animation: fade-up 0.6s ease-out; }
+  .page.active { display: block; }
+
+  .btn-primary {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary:hover { transform: scale(1.05); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .polaroid {
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px 8px 32px 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transform: rotate(var(--rot, 0deg));
+    transition: transform 0.3s;
+  }
+  .polaroid:hover { transform: rotate(0deg) scale(1.03); }
+  .polaroid-img {
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #ffe4ec 0%, #e8d5f2 50%, #d4e8ff 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    overflow: hidden;
+  }
+  .polaroid-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+  .polaroid-caption {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .reason-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 12px 0;
+    position: relative;
+    border: 2px solid #e5e5e5;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .reason-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+  .reason-number {
+    position: absolute;
+    top: -12px;
+    left: 16px;
+    background: #ff6b9d;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .typewriter-text {
+    border-right: 2px solid #1a1a1a;
+    animation: type-cursor 0.8s step-end infinite;
+    white-space: pre-wrap;
+    line-height: 1.7;
+  }
+
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    top: -10px;
+    z-index: 100;
+    animation: confetti-fall linear forwards;
+  }
+
+  .hidden-joke {
+    opacity: 0.3;
+    font-size: 11px;
+    text-align: center;
+    margin-top: 40px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+    color: #999;
+  }
+  .hidden-joke:hover { opacity: 1; }
+  .hidden-joke.revealed { opacity: 1; font-size: 14px; color: #ff6b9d; }
+
+  .music-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #e5e5e5;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    z-index: 50;
+    transition: all 0.2s;
+  }
+  .music-btn:hover { transform: scale(1.1); }
+
+  .cake-container { text-align: center; padding: 32px 0; }
+  .cake { font-size: 80px; cursor: pointer; display: inline-block; transition: transform 0.3s; }
+  .cake:hover { transform: scale(1.1); }
+  .candle { display: inline-block; animation: float 1s ease-in-out infinite; }
+  .candle.out { opacity: 0; transform: scale(0); transition: all 0.5s; }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .big-title {
+    font-size: 36px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+    margin: 16px 0;
+  }
+  .subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .nav-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 40;
+    background: rgba(255,255,255,0.9);
+    padding: 8px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-dot.active { background: #1a1a1a; width: 24px; border-radius: 4px; }
+
+  .message-card {
+    background: linear-gradient(135deg, #fff5f7 0%, #f5f0ff 100%);
+    border-radius: 20px;
+    padding: 28px;
+    margin: 16px 0;
+    border: 2px solid #ffe4ec;
+    position: relative;
+  }
+  .message-card::before {
+    content: "💌";
+    position: absolute;
+    top: -16px;
+    right: 20px;
+    font-size: 32px;
+  }
+
+  .final-screen {
+    text-align: center;
+    padding: 40px 16px 80px;
+  }
+  .final-screen .big-title { font-size: 42px; }
+
+  .sticker-badge {
+    display: inline-block;
+    background: #ff6b9d;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 4px;
+    transform: rotate(-2deg);
+  }
+  .sticker-badge.blue { background: #60a5fa; transform: rotate(2deg); }
+  .sticker-badge.green { background: #6bcb77; transform: rotate(-1deg); }
+  .sticker-badge.purple { background: #a855f7; transform: rotate(1deg); }
+  .sticker-badge.yellow { background: #fbbf24; color: #333; transform: rotate(-2deg); }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<!-- Floating Stickers -->
+<div class="sticker sticker-heart" style="top:60px;left:20px;">💕</div>
+<div class="sticker sticker-star" style="top:120px;right:25px;">⭐</div>
+<div class="sticker sticker-smile" style="top:200px;left:30px;">😊</div>
+<div class="sticker sticker-sparkle" style="top:80px;right:60px;">✨</div>
+<div class="sticker sticker-heart" style="top:350px;right:15px;animation-delay:1s;">💖</div>
+<div class="sticker sticker-star" style="top:500px;left:20px;animation-delay:0.7s;">🌟</div>
+
+<button class="music-btn" onclick="toggleMusic()" title="Toggle music">🎵</button>
+
+<!-- PAGE 1: Landing -->
+<div class="page active" id="page-1">
+  <div style="text-align:center; padding: 80px 16px 40px;">
+    <div style="font-size: 60px; margin-bottom: 16px; animation: heart-beat 1.5s ease-in-out infinite;">🎂</div>
+    <h1 class="big-title">Happy Birthday<br><span style="color:#ff6b9d;">To Us Sweetheart</span>! 🎉</h1>
+    <p class="subtitle">I made something special for you...</p>
+    <button class="btn-primary" onclick="goToPage(2)" style="margin-top: 24px;">
+      Open your surprise ✨
+    </button>
+  </div>
+</div>
+
+<!-- PAGE 2: Reasons I Love You -->
+<div class="page" id="page-2">
+  <div style="text-align:center; padding: 24px 0 16px;">
+    <div style="font-size: 40px; margin-bottom: 8px;">💝</div>
+    <h2 style="font-size: 24px; font-weight: 500;">Reasons I Love You</h2>
+    <p style="color: #666; font-size: 14px;">Click each card to reveal!</p>
+  </div>
+
+  <div class="reason-card" onclick="flipCard(this)">
+    <div class="reason-number">1</div>
+    <div class="card-front" style="padding-top: 8px;">
+      <div style="font-size: 32px; text-align:center; margin: 8px 0;">🏠</div>
+      <p style="text-align:center; font-weight: 500; color: #666;">Tap to reveal...</p>
+    </div>
+    <div class="card-back" style="display:none; padding-top: 8px;">
+      <p style="font-size: 16px; line-height: 1.6;">You make me feel like <strong>family</strong> — not just a partner, but home. With you, I belong. 🏡</p>
+    </div>
+  </div>
+
+  <div class="reason-card" onclick="flipCard(this)">
+    <div class="reason-number">2</div>
+    <div class="card-front" style="padding-top: 8px;">
+      <div style="font-size: 32px; text-align:center; margin: 8px 0;">🔗</div>
+      <p style="text-align:center; font-weight: 500; color: #666;">Tap to reveal...</p>
+    </div>
+    <div class="card-back" style="display:none; padding-top: 8px;">
+      <p style="font-size: 16px; line-height: 1.6;">I feel so <strong>connected</strong> to you — like our souls are on the same frequency. Nothing else feels like this. 💫</p>
+    </div>
+  </div>
+
+  <div class="reason-card" onclick="flipCard(this)">
+    <div class="reason-number">3</div>
+    <div class="card-front" style="padding-top: 8px;">
+      <div style="font-size: 32px; text-align:center; margin: 8px 0;">🎊</div>
+      <p style="text-align:center; font-weight: 500; color: #666;">Tap to reveal...</p>
+    </div>
+    <div class="card-back" style="display:none; padding-top: 8px;">
+      <p style="font-size: 16px; line-height: 1.6;">Life feels like a <strong>party</strong> when I'm with you — even ordinary days feel like celebrations. 🥳</p>
+    </div>
+  </div>
+
+  <div class="reason-card" onclick="flipCard(this)">
+    <div class="reason-number">4</div>
+    <div class="card-front" style="padding-top: 8px;">
+      <div style="font-size: 32px; text-align:center; margin: 8px 0;">🤗</div>
+      <p style="text-align:center; font-weight: 500; color: #666;">Tap to reveal...</p>
+    </div>
+    <div class="card-back" style="display:none; padding-top: 8px;">
+      <p style="font-size: 16px; line-height: 1.6;">You make me feel <strong>safe</strong> — like I can be my most real, most vulnerable self and you'll still be there. 🛡️</p>
+    </div>
+  </div>
+
+  <div class="reason-card" onclick="flipCard(this)">
+    <div class="reason-number">5</div>
+    <div class="card-front" style="padding-top: 8px;">
+      <div style="font-size: 32px; text-align:center; margin: 8px 0;">🌙</div>
+      <p style="text-align:center; font-weight: 500; color: #666;">Tap to reveal...</p>
+    </div>
+    <div class="card-back" style="display:none; padding-top: 8px;">
+      <p style="font-size: 16px; line-height: 1.6;">I <strong>miss you</strong> even when we're apart for a little while — that's how much you mean to me. 💭</p>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top: 24px; padding-bottom: 60px;">
+    <button class="btn-primary" onclick="goToPage(3)">Next: Our Memories 📸</button>
+  </div>
+</div>
+
+<!-- PAGE 3: Photo Gallery -->
+<div class="page" id="page-3">
+  <div style="text-align:center; padding: 24px 0 16px;">
+    <div style="font-size: 40px; margin-bottom: 8px;">📸</div>
+    <h2 style="font-size: 24px; font-weight: 500;">Our Memories</h2>
+    <p style="color: #666; font-size: 14px;">10 moments that make me smile</p>
+  </div>
+
+  <div class="gallery-grid">
+    <div class="polaroid" style="--rot:-3deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:2deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:-2deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:3deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:-1deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:4deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:-4deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:1deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:-2deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+    <div class="polaroid" style="--rot:3deg;">
+      <div class="polaroid-img">📷</div>
+      <div class="polaroid-caption">Replace with your photo</div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin: 24px 0; padding-bottom: 60px;">
+    <button class="btn-primary" onclick="goToPage(4)">Next: My Letter 💌</button>
+  </div>
+</div>
+
+<!-- PAGE 4: Birthday Message -->
+<div class="page" id="page-4">
+  <div style="text-align:center; padding: 24px 0 16px;">
+    <div style="font-size: 40px; margin-bottom: 8px;">💌</div>
+    <h2 style="font-size: 24px; font-weight: 500;">A Letter For You</h2>
+    <p style="color: #666; font-size: 14px;">From my heart to yours</p>
+  </div>
+
+  <div class="message-card">
+    <p id="typewriter" class="typewriter-text" style="font-size: 15px; color: #1a1a1a; min-height: 200px;"></p>
+  </div>
+
+  <div style="text-align:center; margin: 24px 0; padding-bottom: 60px;">
+    <button class="btn-primary" onclick="goToPage(5)" id="msg-next-btn" style="opacity:0; pointer-events:none; transition:opacity 0.5s;">
+      Next: Make a Wish 🎂
+    </button>
+  </div>
+</div>
+
+<!-- PAGE 5: Virtual Cake -->
+<div class="page" id="page-5">
+  <div style="text-align:center; padding: 24px 0 16px;">
+    <div style="font-size: 40px; margin-bottom: 8px;">🎂</div>
+    <h2 style="font-size: 24px; font-weight: 500;">Make a Wish!</h2>
+    <p style="color: #666; font-size: 14px;">Click the candles to blow them out</p>
+  </div>
+
+  <div class="cake-container">
+    <div class="cake" onclick="blowCandles()">
+      <span class="candle" id="c1">🕯️</span>
+      <span style="font-size: 80px;">🎂</span>
+      <span class="candle" id="c2">🕯️</span>
+    </div>
+    <p style="margin-top: 16px; color: #666; font-size: 14px;">
+      Click the cake to blow out the candles! ✨
+    </p>
+  </div>
+
+  <div style="text-align:center; margin: 32px 0; display:none; padding-bottom: 60px;" id="wish-made">
+    <div style="font-size: 48px; margin-bottom: 12px;">✨🌟✨</div>
+    <p style="font-size: 18px; font-weight: 500;">Your wish is made!</p>
+    <p style="color: #666; font-size: 14px; margin-top: 8px;">I hope all your dreams come true, bacha 💫</p>
+    <button class="btn-primary" onclick="goToPage(6)" style="margin-top: 20px;">
+      See Your Surprise 🎁
+    </button>
+  </div>
+</div>
+
+<!-- PAGE 6: Final Surprise -->
+<div class="page" id="page-6">
+  <div class="final-screen">
+    <div style="font-size: 60px; margin-bottom: 16px; animation: heart-beat 1.2s ease-in-out infinite;">💖</div>
+    <h1 class="big-title">Happy Birthday<br><span style="color:#ff6b9d;">To Us Sweetheart</span>!</h1>
+
+    <div style="margin: 24px 0;">
+      <span class="sticker-badge">family</span>
+      <span class="sticker-badge blue">connected</span>
+      <span class="sticker-badge green">party</span>
+      <span class="sticker-badge purple">love</span>
+      <span class="sticker-badge yellow">forever</span>
+    </div>
+
+    <div class="message-card" style="text-align:left; margin: 20px 0;">
+      <p style="font-size: 16px; line-height: 1.7; color: #1a1a1a;">
+        Even though we couldn't be together this time because of the hard times, know that I'm always thinking of you. 
+        I miss you so much, bacha. Every birthday reminds me of you — because you ARE the celebration in my life. 
+        I love you more than words can say. Muaaah 💋
+      </p>
+    </div>
+
+    <div style="font-size: 48px; margin: 20px 0;">🎉🎊🥳</div>
+
+    <p style="color: #666; font-size: 14px; margin-top: 16px;">
+      Made with 💕 for the most special person
+    </p>
+
+    <div class="hidden-joke" onclick="revealJoke(this)">
+      pssst... click here for a secret 🤐
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="nav-dots">
+  <div class="nav-dot active" onclick="goToPage(1)"></div>
+  <div class="nav-dot" onclick="goToPage(2)"></div>
+  <div class="nav-dot" onclick="goToPage(3)"></div>
+  <div class="nav-dot" onclick="goToPage(4)"></div>
+  <div class="nav-dot" onclick="goToPage(5)"></div>
+  <div class="nav-dot" onclick="goToPage(6)"></div>
+</div>
+
+</div>
+
+<script>
+  let currentPage = 1;
+  const totalPages = 6;
+  let musicPlaying = false;
+
+  function goToPage(n) {
+    document.getElementById('page-' + currentPage).classList.remove('active');
+    document.getElementById('page-' + n).classList.add('active');
+    currentPage = n;
+    updateDots();
+
+    if (n === 4) {
+      setTimeout(() => typeMessage(), 400);
+    }
+    if (n === 6) {
+      setTimeout(() => launchConfetti(), 500);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateDots() {
+    const dots = document.querySelectorAll('.nav-dot');
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i + 1 === currentPage);
+    });
+  }
+
+  function flipCard(card) {
+    const front = card.querySelector('.card-front');
+    const back = card.querySelector('.card-back');
+    if (front.style.display !== 'none') {
+      front.style.display = 'none';
+      back.style.display = 'block';
+      back.style.animation = 'fade-up 0.4s ease-out';
+    }
+  }
+
+  const messageText = `Hey sweeety, idk abt my birthday but my birthday just reminds me of you although we couldn't make it this time because of the hard times we have but I always miss you in those moments and I love you yrr I kinda feel emotional writing this cuz I am kinda of worried that you are going out and I'm kind of worried whether I would able to make to the collage or not I will miss you bacha muaaah`;
+
+  function typeMessage() {
+    const el = document.getElementById('typewriter');
+    el.textContent = '';
+    let i = 0;
+    const speed = 35;
+
+    function type() {
+      if (i < messageText.length) {
+        el.textContent += messageText.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      } else {
+        el.style.borderRight = 'none';
+        document.getElementById('msg-next-btn').style.opacity = '1';
+        document.getElementById('msg-next-btn').style.pointerEvents = 'auto';
+      }
+    }
+    type();
+  }
+
+  function blowCandles() {
+    document.getElementById('c1').classList.add('out');
+    document.getElementById('c2').classList.add('out');
+    setTimeout(() => {
+      document.getElementById('wish-made').style.display = 'block';
+      document.getElementById('wish-made').style.animation = 'fade-up 0.6s ease-out';
+    }, 600);
+  }
+
+  function revealJoke(el) {
+    el.textContent = 'my dic wanna meet princess 😏';
+    el.classList.add('revealed');
+    el.style.animation = 'heart-beat 0.5s ease-in-out';
+  }
+
+  function toggleMusic() {
+    musicPlaying = !musicPlaying;
+    const btn = document.querySelector('.music-btn');
+    btn.textContent = musicPlaying ? '🔊' : '🔇';
+    btn.title = musicPlaying ? 'Music playing' : 'Music muted';
+  }
+
+  function launchConfetti() {
+    const colors = ['#ff6b9d', '#ffd93d', '#6bcb77', '#60a5fa', '#a855f7', '#ff8c42'];
+    for (let i = 0; i < 50; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      piece.style.animationDelay = (Math.random() * 1) + 's';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.width = (Math.random() * 6 + 4) + 'px';
+      piece.style.height = (Math.random() * 6 + 4) + 'px';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }
+  }
+</script>
+
+</body>
+</html>
